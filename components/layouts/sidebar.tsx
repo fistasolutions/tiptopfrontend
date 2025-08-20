@@ -8,6 +8,12 @@ import { useState, useEffect } from "react";
 import IconCaretsDown from "@/components/icon/icon-carets-down";
 import IconMenuDashboard from "@/components/icon/menu/icon-menu-dashboard";
 import IconMinus from "@/components/icon/icon-minus";
+import IconUsers from "@/components/icon/icon-users";
+import IconUserPlus from "@/components/icon/icon-user-plus";
+import IconSettings from "@/components/icon/icon-settings";
+import IconLock from "@/components/icon/icon-lock";
+import IconNotes from "@/components/icon/icon-notes";
+import IconBarChart from "@/components/icon/icon-bar-chart";
 import { MessageSquarePlus } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { getTranslation } from "@/i18n";
@@ -18,11 +24,14 @@ import {
   Brain,
   Calendar,
   ChartBar,
+  Home,
   Package,
   PhoneCall,
   Settings,
   Target,
   Users,
+  Building,
+  Bell,
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -88,9 +97,8 @@ const Sidebar = () => {
         <div className="h-full bg-black">
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
             <Link href="/" className="main-logo flex shrink-0 items-center">
-              <Brain className="h-6 w-6 text-white" />
               <span className="align-middle text-2xl font-semibold dark:text-white-light lg:inline ltr:ml-1.5 rtl:mr-1.5">
-                Oliver AI
+                Tip Top <br /> Anesthesia
               </span>
             </Link>
 
@@ -104,35 +112,108 @@ const Sidebar = () => {
           </div>
           <PerfectScrollbar className="relative h-[calc(100vh-80px)]">
             <ul className="relative space-y-0.5 p-4 py-0 font-semibold">
+              <h2 className="-mx-4 mb-1 flex items-center px-7  py-3 text-xs  uppercase ">
+                <IconMinus className="hidden h-5 w-4 flex-none" />
+                <span>{t("Overview")}</span>
+              </h2>
               <li className="menu nav-item">
-                <h2 className="-mx-4 mb-1 flex items-center px-7  py-3 text-xs  uppercase ">
-                  <IconMinus className="hidden h-5 w-4 flex-none" />
-                  <span>{t("Overview")}</span>
-                </h2>
-
-                <li className="nav-item">
-                  <Link href="/admin-home" className="group">
-                    <div className="flex items-center">
-                      <IconMenuDashboard className="shrink-0 group-hover:!text-white" />
-                      <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
-                        {t("Admin Access")}
-                      </span>
-                    </div>
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link href="/dashboard" className="group">
-                    <div className="flex items-center">
-                      <IconMenuDashboard className="shrink-0 group-hover:!text-white" />
-                      <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
-                        {t("Dashboard")}
-                      </span>
-                    </div>
-                  </Link>
-                </li>
+                <ul>
+                  <li className="nav-item">
+                    <Link href="/admin-access" className="group">
+                      <div className="flex items-center">
+                        <IconMenuDashboard className="shrink-0 group-hover:!text-white" />
+                        <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
+                          {t("admin_access")}
+                        </span>
+                      </div>
+                    </Link>
+                  </li>
+                </ul>
               </li>
 
-              <h2 className="-mx-4 mb-1 flex items-center px-7 py-3 text-xs  uppercase ">
+              <li className="nav-item">
+                <Link href="/user-managment" className="group">
+                  <div className="flex items-center">
+                    <IconUsers className="shrink-0 group-hover:!text-white" />
+                    <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
+                      {t("user_management")}
+                    </span>
+                  </div>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link href="/add-user" className="group">
+                  <div className="flex items-center">
+                    <IconUserPlus className="shrink-0 group-hover:!text-white" />
+                    <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
+                      {t("add_user")}
+                    </span>
+                  </div>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link href="/system-configuration" className="group">
+                  <div className="flex items-center">
+                    <IconSettings className="shrink-0 group-hover:!text-white" />
+                    <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
+                      {t("system_configuration")}
+                    </span>
+                  </div>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link href="/roles-permissions" className="group">
+                  <div className="flex items-center">
+                    <IconLock className="shrink-0 group-hover:!text-white" />
+                    <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
+                      {t("roles_permissions")}
+                    </span>
+                  </div>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link href="/audit-logs" className="group">
+                  <div className="flex items-center">
+                    <IconNotes className="shrink-0 group-hover:!text-white" />
+                    <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
+                      {t("audit_logs")}
+                    </span>
+                  </div>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link href="/report" className="group">
+                  <div className="flex items-center">
+                    <IconBarChart className="shrink-0 group-hover:!text-white" />
+                    <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
+                      {t("report")}
+                    </span>
+                  </div>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link href="/facilities" className="group">
+                  <div className="flex items-center">
+                    <Building className="shrink-0 group-hover:!text-white" />
+                    <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
+                      {t("facilities_management")}
+                    </span>
+                  </div>
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link href="/notifications" className="group">
+                  <div className="flex items-center">
+                    <Bell className="shrink-0 group-hover:!text-white" />
+                    <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
+                      {t("notification")}
+                    </span>
+                  </div>
+                </Link>
+              </li>
+              {/* comment start here */}
+              {/*
+              <h2 className="-mx-4 mb-1 flex items-center px-7  py-3 text-xs  uppercase ">
                 <IconMinus className="hidden h-5 w-4 flex-none" />
                 <span>{t("Products Management")}</span>
               </h2>
@@ -142,7 +223,6 @@ const Sidebar = () => {
                   <li className="nav-item">
                     <Link href="/products" className="group">
                       <div className="flex items-center">
-                        {/* <IconMenuChat className="shrink-0 group-hover:!text-white" /> */}
                         <Package className="h-5 w-5 text-black  dark:text-[#506690] dark:group-hover:text-white-dark" />
                         <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
                           {t("Products")}
@@ -162,7 +242,6 @@ const Sidebar = () => {
                   <li className="nav-item">
                     <Link href="/live-calls" className="group">
                       <div className="flex items-center">
-                        {/* <IconMenuChat className="shrink-0 group-hover:!text-white" /> */}
                         <PhoneCall className="h-5 w-5 text-black  dark:text-[#506690] dark:group-hover:text-white-dark" />
                         <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
                           {t("Live Calls")}
@@ -173,7 +252,6 @@ const Sidebar = () => {
                   <li className="nav-item">
                     <Link href="/progress" className="group">
                       <div className="flex items-center">
-                        {/* <IconMenuMailbox className="shrink-0 group-hover:!text-white" /> */}
                         <BarChart className="h-5 w-5 text-black  dark:text-[#506690] dark:group-hover:text-white-dark" />
                         <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
                           {t("Progress")}
@@ -193,7 +271,6 @@ const Sidebar = () => {
                   <li className="nav-item">
                     <Link href="/chat" className="group">
                       <div className="flex items-center">
-                        {/* <IconMenuChat className="shrink-0 group-hover:!text-white" /> */}
                         <MessageSquarePlus className="h-5 w-5 text-black  dark:text-[#506690] dark:group-hover:text-white-dark" />
                         <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
                           {t("Chat")}
@@ -212,7 +289,6 @@ const Sidebar = () => {
               <li className="menu nav-item">
                 <Link href="/coaching" className="group">
                   <div className="flex items-center">
-                    {/* <IconMenuCharts className="shrink-0 group-hover:!text-white" /> */}
                     <BookOpen className="h-5 w-5 text-black  dark:text-[#506690] dark:group-hover:text-white-dark" />
                     <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
                       {t("Coaching")}
@@ -224,7 +300,6 @@ const Sidebar = () => {
               <li className="menu nav-item">
                 <Link href="/goals" className="group">
                   <div className="flex items-center">
-                    {/* <IconMenuWidgets className="shrink-0 group-hover:!text-white" /> */}
                     <Target className="h-5 w-5 text-black  dark:text-[#506690] dark:group-hover:text-white-dark" />
                     <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
                       {t("Goals")}
@@ -236,7 +311,6 @@ const Sidebar = () => {
               <li className="menu nav-item">
                 <Link href="/schedule" className="group">
                   <div className="flex items-center">
-                    {/* <IconMenuFontIcons className="shrink-0 group-hover:!text-white" /> */}
                     <Calendar className="h-5 w-5 text-black  dark:text-[#506690] dark:group-hover:text-white-dark" />
                     <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
                       {t("Schedule")}
@@ -252,7 +326,6 @@ const Sidebar = () => {
               <li className="menu nav-item">
                 <Link href="/team" className="group">
                   <div className="flex items-center">
-                    {/* <IconMenuCharts className="shrink-0 group-hover:!text-white" /> */}
                     <Users className="h-5 w-5 text-black  dark:text-[#506690] dark:group-hover:text-white-dark" />
                     <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
                       {t("Team Management")}
@@ -264,7 +337,6 @@ const Sidebar = () => {
               <li className="menu nav-item">
                 <Link href="/team-insight" className="group">
                   <div className="flex items-center">
-                    {/* <IconMenuWidgets className="shrink-0 group-hover:!text-white" /> */}
                     <ChartBar className="h-5 w-5 text-black  dark:text-[#506690] dark:group-hover:text-white-dark" />
                     <span className="text-sm text-black dark:text-[#506690] dark:group-hover:text-white-dark ltr:pl-3 rtl:pr-3">
                       {t("Team Insights")}
@@ -272,6 +344,8 @@ const Sidebar = () => {
                   </div>
                 </Link>
               </li>
+              */}
+              {/* comment end here */}
               <h2 className="-mx-4 mb-1 flex items-center px-7  py-3 text-xs  uppercase ">
                 <IconMinus className="hidden h-5 w-4 flex-none" />
                 <span>{t("Settings")}</span>
@@ -289,7 +363,7 @@ const Sidebar = () => {
                 </Link>
               </li>
             </ul>
-            <div className="sticky  p-4">
+            {/* <div className="sticky  p-4">
               <div className="rounded-lg bg-[#1E2436] p-4">
                 <div className="flex items-center">
                   <div className="ml-3">
@@ -306,7 +380,7 @@ const Sidebar = () => {
                   Upgrade Now
                 </button>
               </div>
-            </div>
+            </div> */}
           </PerfectScrollbar>
         </div>
       </nav>

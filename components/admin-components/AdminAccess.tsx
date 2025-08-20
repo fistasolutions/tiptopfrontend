@@ -1,28 +1,15 @@
 "use client";
+import IconUsers from "@/components/icon/icon-users";
+import IconUserPlus from "@/components/icon/icon-user-plus";
+import IconSettings from "@/components/icon/icon-settings";
+import IconLock from "@/components/icon/icon-lock";
+import IconNotes from "@/components/icon/icon-notes";
+import IconBarChart from "@/components/icon/icon-bar-chart";
 import HeaderSection from "@/components/live-calls/HeaderSection";
 import StatisticsCards from "@/components/live-calls/StatisticsCards";
 import React from "react";
 
-// AdminCard Component
-const AdminCard = ({
-  icon,
-  title,
-  description,
-}: {
-  icon: string;
-  title: string;
-  description: string;
-}) => {
-  return (
-    <div className="cursor-pointer rounded-lg border border-gray-100 bg-white p-6 shadow-md transition-shadow duration-300 hover:shadow-lg">
-      <div className="mb-4 text-2xl">{icon}</div>
-      <h3 className="mb-2 text-lg font-semibold text-gray-800">{title}</h3>
-      <p className="text-sm text-gray-600">{description}</p>
-    </div>
-  );
-};
-
-function AdminHome() {
+function AdminAccessComponent() {
   const headerData = {
     title: "Welcome back, Mr. Ahmad",
     description:
@@ -59,32 +46,32 @@ function AdminHome() {
 
   const administrativeFunctions = [
     {
-      icon: "👥",
+      icon: IconUsers,
       title: "User Management",
       description: "Manage existing users",
     },
     {
-      icon: "➕",
+      icon: IconUserPlus,
       title: "Add User",
       description: "Add new users",
     },
     {
-      icon: "⚙️",
+      icon: IconSettings,
       title: "System Configuration",
       description: "Configure system settings",
     },
     {
-      icon: "🛡️",
+      icon: IconLock,
       title: "Roles & Permissions",
       description: "Manage roles and permissions",
     },
     {
-      icon: "📋",
+      icon: IconNotes,
       title: "Audit Logs",
       description: "View system activity logs",
     },
     {
-      icon: "📊",
+      icon: IconBarChart,
       title: "Reporting & Analytics",
       description: "Generate system reports",
     },
@@ -97,14 +84,12 @@ function AdminHome() {
 
       {/* Administrative Functions Section */}
       <div className="mt-8 ">
-        <h1 className="mb-6 text-xl font-bold  sm:text-2xl">
-          Administrative Functions
-        </h1>
+        <h1 className="mb-6 text-lg font-bold  ">Administrative Functions</h1>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {administrativeFunctions.map((func, index) => (
             <AdminCard
               key={index}
-              icon={func.icon}
+              Icon={func.icon}
               title={func.title}
               description={func.description}
             />
@@ -115,4 +100,25 @@ function AdminHome() {
   );
 }
 
-export default AdminHome;
+export default AdminAccessComponent;
+
+// AdminCard Component
+const AdminCard = ({
+  Icon,
+  title,
+  description,
+}: {
+  Icon: React.FC;
+  title: string;
+  description: string;
+}) => {
+  return (
+    <div className="panel">
+      <div className="mb-4 text-2xl">
+        <Icon />
+      </div>
+      <h3 className="mb-2 text-lg font-semibold ">{title}</h3>
+      <p className="text-sm">{description}</p>
+    </div>
+  );
+};

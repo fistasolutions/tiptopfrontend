@@ -1,144 +1,524 @@
-'use client';
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { toggleTheme } from '@/store/themeConfigSlice';
-import { IRootState } from '@/store';
-import SettingsHeader from './SettingsHeader';
-import SettingsSection from './SettingsSection';
-import SettingsItem from './SettingsItem';
+"use client";
 
-const Settings = () => {
-  const dispatch = useDispatch();
-  const themeConfig = useSelector((state: IRootState) => state.themeConfig);
-  
-  const [settings, setSettings] = useState({
-    personalInfo: true,
-    changePassword: true,
-    emailNotifications: true,
-    practiceReminders: false,
-    callRecording: true,
-    dataSharing: true,
-    microphone: true,
-    soundEffects: false,
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getSettings,
+  updateProfile,
+  updateSecurity,
+  updateNotifications,
+  changePassword,
+  UserProfile,
+  SecuritySettings,
+  NotificationSettings,
+} from "@/services/settingsService";
+import IconUser from "@/components/icon/icon-user";
+import IconLock from "@/components/icon/icon-lock";
+import IconBell from "@/components/icon/icon-bell";
+import Swal from "sweetalert2";
+
+type TabType = "profile" | "security" | "notification";
+
+const Settings: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<TabType>("profile");
+  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
+
+  // Query for settings data
+  const { data: settings, isLoading: isLoadingSettings } = useQuery({
+    queryKey: ["settings"],
+    queryFn: getSettings,
   });
 
-  const handleToggle = (key: keyof typeof settings) => (enabled: boolean) => {
-    setSettings(prev => ({ ...prev, [key]: enabled }));
+  // Form states
+  const [profileForm, setProfileForm] = useState<UserProfile>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+  });
+
+  const [securityForm, setSecurityForm] = useState<SecuritySettings>({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  const [notificationForm, setNotificationForm] =
+    useState<NotificationSettings>({
+      emailClaimAssignments: true,
+      emailClaimUpdates: true,
+      inAppSystemAnnouncements: false,
+    });
+
+  // Update form data when settings are loaded
+  React.useEffect(() => {
+    if (settings) {
+      setProfileForm(settings.profile);
+      setSecurityForm(settings.security);
+      setNotificationForm(settings.notifications);
+    }
+  }, [settings]);
+
+  // Mutations
+  const updateProfileMutation = useMutation({
+    mutationFn: updateProfile,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
+      showSuccessMessage("Profile updated successfully");
+    },
+    onError: (error) => {
+      showErrorMessage("Failed to update profile");
+    },
+  });
+
+  const updateSecurityMutation = useMutation({
+    mutationFn: changePassword,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
+      setSecurityForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      showSuccessMessage("Password changed successfully");
+    },
+    onError: (error) => {
+      showErrorMessage(
+        error instanceof Error ? error.message : "Failed to change password"
+      );
+    },
+  });
+
+  const updateNotificationMutation = useMutation({
+    mutationFn: updateNotifications,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
+      showSuccessMessage("Notification settings updated successfully");
+    },
+    onError: (error) => {
+      showErrorMessage("Failed to update notification settings");
+    },
+  });
+
+  // Handle tab change
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
   };
 
-  const handleDarkModeToggle = (enabled: boolean) => {
-    dispatch(toggleTheme(enabled ? 'dark' : 'light'));
+  // Handle profile form submission
+  const handleProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Show confirmation modal
+    const result = await Swal.fire({
+      title: "Confirm settings update",
+      text: "To apply the changes, please confirm your settings update",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Confirm",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+      customClass: {
+        popup: "panel",
+        title: "text-center",
+        htmlContainer: "text-center",
+        actions: "text-center",
+        confirmButton: "btn btn-primary",
+        cancelButton: "btn btn-secondary",
+      },
+    });
+
+    if (result.isConfirmed) {
+      updateProfileMutation.mutate(profileForm);
+    }
   };
+
+  // Handle security form submission
+  const handleSecuritySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate passwords
+    if (securityForm.newPassword !== securityForm.confirmPassword) {
+      showErrorMessage("New passwords do not match");
+      return;
+    }
+
+    if (securityForm.newPassword.length < 8) {
+      showErrorMessage("Password must be at least 8 characters long");
+      return;
+    }
+
+    // Show confirmation modal
+    const result = await Swal.fire({
+      title: "Confirm settings update",
+      text: "To apply the changes, please confirm your settings update",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Confirm",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+      customClass: {
+        popup: "panel",
+        title: "text-center",
+        htmlContainer: "text-center",
+        actions: "text-center",
+        confirmButton: "btn btn-primary",
+        cancelButton: "btn btn-secondary",
+      },
+    });
+
+    if (result.isConfirmed) {
+      updateSecurityMutation.mutate(securityForm);
+    }
+  };
+
+  // Handle notification form submission
+  const handleNotificationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Show confirmation modal
+    const result = await Swal.fire({
+      title: "Confirm settings update",
+      text: "To apply the changes, please confirm your settings update",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Confirm",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+      customClass: {
+        popup: "panel",
+        title: "text-center",
+        htmlContainer: "text-center",
+        actions: "text-center",
+        confirmButton: "btn btn-primary",
+        cancelButton: "btn btn-secondary",
+      },
+    });
+
+    if (result.isConfirmed) {
+      updateNotificationMutation.mutate(notificationForm);
+    }
+  };
+
+  // Handle form input changes
+  const handleProfileInputChange =
+    (field: keyof UserProfile) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setProfileForm((prev) => ({ ...prev, [field]: e.target.value }));
+    };
+
+  const handleSecurityInputChange =
+    (field: keyof SecuritySettings) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSecurityForm((prev) => ({ ...prev, [field]: e.target.value }));
+    };
+
+  const handleNotificationChange =
+    (field: keyof NotificationSettings) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setNotificationForm((prev) => ({ ...prev, [field]: e.target.checked }));
+    };
+
+  // Show success message
+  const showSuccessMessage = (message: string) => {
+    Swal.fire({
+      title: "Settings saved successfully",
+      text: message,
+      icon: "success",
+      confirmButtonText: "Close",
+      customClass: {
+        popup: "panel",
+        title: "text-center",
+        htmlContainer: "text-center",
+        actions: "text-center",
+        confirmButton: "btn btn-primary",
+      },
+    });
+  };
+
+  // Show error message
+  const showErrorMessage = (message: string) => {
+    Swal.fire({
+      title: "Error",
+      text: message,
+      icon: "error",
+      confirmButtonText: "OK",
+      customClass: {
+        popup: "panel",
+        title: "text-center",
+        htmlContainer: "text-center",
+        actions: "text-center",
+        confirmButton: "btn btn-primary",
+      },
+    });
+  };
+
+  if (isLoadingSettings) {
+    return (
+      <div className="p-6">
+        <div className="flex items-center justify-center py-8">
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <SettingsHeader />
-      
-      <SettingsSection
-        icon={
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-        }
-        title="Profile"
-      >
-        <SettingsItem
-          title="Personal Information"
-          description="Update your name, email, and profile details"
-          enabled={settings.personalInfo}
-          onToggle={handleToggle('personalInfo')}
-        />
-        <SettingsItem
-          title="Change Password"
-          description="Modify your account password"
-          enabled={settings.changePassword}
-          onToggle={handleToggle('changePassword')}
-        />
-      </SettingsSection>
+    <div>
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">Settings</h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Manage your personal and professional settings
+        </p>
+      </div>
 
-      <SettingsSection
-        icon={
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-          </svg>
-        }
-        title="Notifications"
-      >
-        <SettingsItem
-          title="Email Notifications"
-          description="Receive updates about your progress and new content"
-          enabled={settings.emailNotifications}
-          onToggle={handleToggle('emailNotifications')}
-        />
-        <SettingsItem
-          title="Practice Reminders"
-          description="Get reminded to practice regularly"
-          enabled={settings.practiceReminders}
-          onToggle={handleToggle('practiceReminders')}
-        />
-      </SettingsSection>
+      <div className="flex gap-6">
+        {/* Left Sidebar - Navigation Tabs */}
+        <div className="w-48 flex-shrink-0">
+          <div className="panel">
+            <div className="space-y-2">
+              <button
+                onClick={() => handleTabChange("profile")}
+                className={`flex w-full items-center gap-3 rounded-md px-4 py-3 text-left font-semibold transition-colors ${
+                  activeTab === "profile"
+                    ? "bg-primary text-white"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                }`}
+              >
+                <IconUser className="h-5 w-5" />
+                Profile
+              </button>
+              <button
+                onClick={() => handleTabChange("security")}
+                className={`flex w-full items-center gap-3 rounded-md px-4 py-3 text-left font-semibold transition-colors ${
+                  activeTab === "security"
+                    ? "bg-primary text-white"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                }`}
+              >
+                <IconLock className="h-5 w-5" />
+                Security
+              </button>
+              <button
+                onClick={() => handleTabChange("notification")}
+                className={`flex w-full items-center gap-3 rounded-md px-4 py-3 text-left font-semibold transition-colors ${
+                  activeTab === "notification"
+                    ? "bg-primary text-white"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                }`}
+              >
+                <IconBell className="h-5 w-5" />
+                Notification
+              </button>
+            </div>
+          </div>
+        </div>
 
-      <SettingsSection
-        icon={
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
-        }
-        title="Privacy"
-      >
-        <SettingsItem
-          title="Call Recording Storage"
-          description="Manage how long your practice calls are stored"
-          enabled={settings.callRecording}
-          onToggle={handleToggle('callRecording')}
-        />
-        <SettingsItem
-          title="Data Sharing"
-          description="Control what data is shared with your team"
-          enabled={settings.dataSharing}
-          onToggle={handleToggle('dataSharing')}
-        />
-      </SettingsSection>
+        {/* Main Content Area */}
+        <div className="flex-1">
+          <div className="panel">
+            {/* Profile Tab */}
+            {activeTab === "profile" && (
+              <div>
+                <h2 className="mb-6 text-center text-xl font-bold">Profile</h2>
+                <form onSubmit={handleProfileSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block font-semibold">
+                        First Name
+                      </label>
+                      <input
+                        type="text"
+                        value={profileForm.firstName}
+                        onChange={handleProfileInputChange("firstName")}
+                        className="form-input w-full"
+                        placeholder="Enter your first name"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-2 block font-semibold">
+                        Last Name
+                      </label>
+                      <input
+                        type="text"
+                        value={profileForm.lastName}
+                        onChange={handleProfileInputChange("lastName")}
+                        className="form-input w-full"
+                        placeholder="Enter your last name"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-2 block font-semibold">Email</label>
+                    <input
+                      type="email"
+                      value={profileForm.email}
+                      onChange={handleProfileInputChange("email")}
+                      className="form-input w-full"
+                      placeholder="Enter your email address"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-2 block font-semibold">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={profileForm.phoneNumber}
+                      onChange={handleProfileInputChange("phoneNumber")}
+                      className="form-input w-full"
+                      placeholder="Enter your phone number"
+                    />
+                  </div>
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={updateProfileMutation.isPending}
+                    >
+                      {updateProfileMutation.isPending
+                        ? "Saving..."
+                        : "Save Changes"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
 
-      <SettingsSection
-        icon={
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-          </svg>
-        }
-        title="Appearance"
-      >
-        <SettingsItem
-          title="Dark Mode"
-          description="Toggle dark mode for the interface"
-          enabled={themeConfig.theme === 'dark'}
-          onToggle={handleDarkModeToggle}
-        />
-      </SettingsSection>
+            {/* Security Tab */}
+            {activeTab === "security" && (
+              <div>
+                <h2 className="mb-6 text-center text-xl font-bold">Security</h2>
+                <form onSubmit={handleSecuritySubmit} className="space-y-6">
+                  <div>
+                    <label className="mb-2 block font-semibold">
+                      Current Password
+                    </label>
+                    <input
+                      type="password"
+                      value={securityForm.currentPassword}
+                      onChange={handleSecurityInputChange("currentPassword")}
+                      className="form-input w-full"
+                      placeholder="Enter your current password"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-2 block font-semibold">
+                      New Password
+                    </label>
+                    <input
+                      type="password"
+                      value={securityForm.newPassword}
+                      onChange={handleSecurityInputChange("newPassword")}
+                      className="form-input w-full"
+                      placeholder="Enter your new password"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-2 block font-semibold">
+                      Confirm New Password
+                    </label>
+                    <input
+                      type="password"
+                      value={securityForm.confirmPassword}
+                      onChange={handleSecurityInputChange("confirmPassword")}
+                      className="form-input w-full"
+                      placeholder="Confirm your new password"
+                    />
+                  </div>
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={updateSecurityMutation.isPending}
+                    >
+                      {updateSecurityMutation.isPending
+                        ? "Saving..."
+                        : "Save Changes"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
 
-      <SettingsSection
-        icon={
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-          </svg>
-        }
-        title="Audio"
-      >
-        <SettingsItem
-          title="Microphone"
-          description="Configure your microphone settings for calls"
-          enabled={settings.microphone}
-          onToggle={handleToggle('microphone')}
-        />
-        <SettingsItem
-          title="Sound Effects"
-          description="Enable or disable interface sound effects"
-          enabled={settings.soundEffects}
-          onToggle={handleToggle('soundEffects')}
-        />
-      </SettingsSection>
+            {/* Notification Tab */}
+            {activeTab === "notification" && (
+              <div>
+                <h2 className="mb-6 text-center text-xl font-bold">
+                  Notification
+                </h2>
+                <form onSubmit={handleNotificationSubmit} className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="emailClaimAssignments"
+                        checked={notificationForm.emailClaimAssignments}
+                        onChange={handleNotificationChange(
+                          "emailClaimAssignments"
+                        )}
+                        className="form-checkbox mr-3"
+                      />
+                      <label
+                        htmlFor="emailClaimAssignments"
+                        className="font-semibold"
+                      >
+                        Email notifications for new claim assignments
+                      </label>
+                    </div>
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="emailClaimUpdates"
+                        checked={notificationForm.emailClaimUpdates}
+                        onChange={handleNotificationChange("emailClaimUpdates")}
+                        className="form-checkbox mr-3"
+                      />
+                      <label
+                        htmlFor="emailClaimUpdates"
+                        className="font-semibold"
+                      >
+                        Email notifications for claim updates
+                      </label>
+                    </div>
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="inAppSystemAnnouncements"
+                        checked={notificationForm.inAppSystemAnnouncements}
+                        onChange={handleNotificationChange(
+                          "inAppSystemAnnouncements"
+                        )}
+                        className="form-checkbox mr-3"
+                      />
+                      <label
+                        htmlFor="inAppSystemAnnouncements"
+                        className="font-semibold"
+                      >
+                        In-app notifications for system announcements
+                      </label>
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={updateNotificationMutation.isPending}
+                    >
+                      {updateNotificationMutation.isPending
+                        ? "Saving..."
+                        : "Save Changes"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default Settings; 
+export default Settings;
